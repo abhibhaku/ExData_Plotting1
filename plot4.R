@@ -1,22 +1,50 @@
-#set working directory
-setwd("D:/ISB Co 2018/Coursera/Data Science Specialization/Exploratory Data Analysis/Individual Household Power Consumption Set")
-#read the household power conssumption .txt file & plot the charts
-house_power <- read.table("household_power_consumption.txt", header=TRUE, sep=";", stringsAsFactors=FALSE, dec=".")
-house_power_1 <- house_power[house_power$Date %in% c("1/2/2007","2/2/2007") ,]
-house_power_time <- strptime(paste(house_power_1$Date, house_power_1$Time, sep=" "), "%d/%m/%Y %H:%M:%S")
-gap <- as.numeric(house_power_1$Global_active_power)
-sm1 <- as.numeric(house_power_1$Sub_metering_1)
-sm2 <- as.numeric(house_power_1$Sub_metering_2)
-sm3 <- as.numeric(house_power_1$Sub_metering_3)
-grp <- as.numeric(house_power_1$Global_reactive_power)
-volt <- as.numeric(house_power_1$Voltage)
+
+# Exploratory Data Analysis - Project 1
+
+# Unzipping files to working directory 
+
+zip_Epc <- "D:/ISB Co 2018/Coursera/Data Science Specialization/Exploratory Data Analysis/Week 1 - Project 1/exdata%2Fdata%2Fhousehold_power_consumption.zip"
+unzip(zip_Epc)
+
+# reading .txt file in R into a dataframe & assigning the column names
+
+h_power <- read.table("household_power_consumption.txt",skip = 1,sep = ";")
+colnames(h_power) <- c("Date","Time","Global_active_power","Global_reactive_power","Voltage","Global_intensity","Sub_metering_1","Sub_metering_2","Sub_metering_3")
+
+# converting Date & Time column variables to Date & Time class
+
+h_power$Date <- as.Date(h_power$Date,format="%d/%m/%Y")
+h_power$Time <- strptime(h_power$Time, format="%H:%M:%S")
+
+# extracting relevant data for dates 2007-02-01 and 2007-02-02, into a separate data frame
+
+h_power_Feb <- subset(h_power,Date == "2007-02-01"| Date == "2007-02-02")
+h_power_Feb$Global_active_power <- as.numeric(h_power_Feb$Global_active_power/1000)
+h_power_Feb$Sub_metering_1 <- as.numeric(h_power_Feb$Sub_metering_1)
+h_power_Feb$Sub_metering_2 <- as.numeric(h_power_Feb$Sub_metering_2)
+h_power_Feb$Sub_metering_3 <- as.numeric(h_power_Feb$Sub_metering_3)
+h_power_Feb$Voltage <- as.numeric(h_power_Feb$Voltage)
+h_power_Feb$Global_reactive_power <- as.numeric(h_power_Feb$Global_reactive_power)
+
+# formatting Time to appear as day of week in plot
+
+h_power_Feb[1:1440,"Time"] <- format(h_power_Feb[1:1440,"Time"],"2007-02-01 %H:%M:%S")
+h_power_Feb[1441:2880,"Time"] <- format(h_power_Feb[1441:2880,"Time"],"2007-02-02 %H:%M:%S")
+
+# plotting plot4 - 4 graphs for 2 days of Feb
+
 png("plot4.png", width=480, height=480)
 par(mfrow = c(2, 2)) 
-plot(house_power_time, gap, type="l", xlab="", ylab="Global Active Power", cex=0.2)
-plot(house_power_time, volt, type="l", xlab="datetime", ylab="Voltage")
-plot(house_power_time, sm1, type="l", ylab="Energy Submetering", xlab="")
-lines(house_power_time, sm2, type="l", col="red")
-lines(house_power_time, sm3, type="l", col="blue")
-legend("topright", c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"), lty=, lwd=2.5, col=c("black", "red", "blue"), bty="o")
-plot(house_power_time, grp, type="l", xlab="datetime", ylab="Global_reactive_power")
+
+plot(h_power_Feb$Time,h_power_Feb$Global_active_power,type="l",xlab = "",ylab = "Global Active Power")
+plot(h_power_Feb$Time,h_power_Feb$Voltage, type="l", xlab="datetime", ylab="Voltage")
+
+plot(h_power_Feb$Time, h_power_Feb$Sub_metering_1, type="l", xlab="", ylab="Energy Submetering")
+lines(h_power_Feb$Time, h_power_Feb$Sub_metering_2, type="l", col="red")
+lines(h_power_Feb$Time, h_power_Feb$Sub_metering_3, type="l", col="blue")
+legend("topright", c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"), lty=1, lwd=2.5, col=c("black", "red", "blue"))
+
+plot(h_power_Feb$Time,h_power_Feb$Global_reactive_power, type="l", xlab="datetime", ylab="Global_reactive_power")
+
 dev.off()
+
